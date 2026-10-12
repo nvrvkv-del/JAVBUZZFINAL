@@ -1,0 +1,27 @@
+JAV-BUZZ — NEW REBUILD
+
+This package is SOURCE CODE. GitHub builds the Windows VST3 for you.
+
+1. Extract this outer ZIP on your computer.
+2. Open your JAVBUZZ repository on GitHub -> Code.
+3. Add file -> Upload files -> upload JAV-BUZZ-source.zip -> Commit changes.
+   Upload that ZIP AS A ZIP. Do not extract its folders or upload the outer ZIP.
+4. Open .github/workflows/build-windows.yml in your repository and edit it.
+   If it does not exist: Add file -> Create new file, with that exact filename.
+5. Open the included build-windows.yml in Notepad. Copy ALL its contents into
+   the GitHub editor, replacing the old workflow, and commit.
+6. Open Actions -> Build JAV-BUZZ. If no run starts, choose Run workflow.
+7. When it is green, open that run. Under Artifacts, download
+   JAV-BUZZ-Windows-x64. This is the actual compiled plug-in package.
+8. Extract that download. Close Studio One. Right-click INSTALL.cmd ->
+   Run as administrator. Open Studio One, rescan, and load JAV-BUZZ.
+
+The artifact also contains ui-previews with all four actual panel states.
+
+If the build is red, open the failed step and send its red error text or a
+screenshot. Do not install an older artifact expecting the new interface.
+
+You do NOT need JUCE or Visual Studio installed locally for this route.
+Old source folders in your repository do not need to be deleted: the new
+workflow uses only the new source ZIP. Disable an older separate workflow
+if you do not want it to run as well.
