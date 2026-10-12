@@ -1,0 +1,46 @@
+name: Build JAV-BUZZ
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'JAV-BUZZ-source.zip'
+      - '.github/workflows/build-windows.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Unpack the complete source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (!(Test-Path 'JAV-BUZZ-source.zip')) { throw 'Upload JAV-BUZZ-source.zip to the main repository page first. Do not extract it.' }
+          Expand-Archive JAV-BUZZ-source.zip -DestinationPath jav-project -Force
+          foreach ($file in @('CMakeLists.txt','Source/Processor.cpp','Source/Editor.cpp','tests/CoreTests.cpp','tests/PluginSmoke.cpp','Assets/Character.png')) {
+            if (!(Test-Path "jav-project/$file")) { throw "Source ZIP is incomplete: $file" }
+          }
+      - name: Configure Windows x64
+        run: cmake -S jav-project -B build -G "Visual Studio 17 2022" -A x64
+      - name: Compile plugin and tests
+        run: cmake --build build --config Release --parallel 2
+      - name: Check audio, presets and editor states
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Package complete VST3 bundle
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Path release | Out-Null
+          $plugin = 'build/JAVBUZZ_artefacts/Release/VST3/JAV-BUZZ.vst3'
+          if (!(Test-Path $plugin)) { throw 'Compiled VST3 bundle was not found.' }
+          Copy-Item $plugin release/ -Recurse
+          Copy-Item jav-project/INSTALL.cmd release/
+          Copy-Item jav-project/QUICK-START.txt release/
+          Copy-Item build/ui-previews release/ -Recurse
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: JAV-BUZZ-Windows-x64
+          path: release/
+          if-no-files-found: error
